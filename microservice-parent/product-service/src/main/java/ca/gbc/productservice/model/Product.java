@@ -18,7 +18,6 @@ public class Product {
 
     @Id
     private String Id;
-
     private String Name;
     private String Description;
     private BigDecimal Price;

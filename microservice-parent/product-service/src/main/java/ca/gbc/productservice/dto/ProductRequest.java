@@ -7,4 +7,6 @@ public record ProductRequest(
         String Name,
         String Description,
         BigDecimal Price
-) {}
+) {
+}
+
