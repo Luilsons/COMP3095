@@ -32,11 +32,9 @@ public class ProductServiceImpl implements ProductService {
                 .Price(productRequest.Price())
                 .build();
 
-        // Persist a product
+        // Save to database
         productRepository.save(product);
-
         log.info("Product {} is saved", product.getId());
-
         return new ProductResponse(product.getId(), product.getName(),
                 product.getDescription(), product.getPrice());
     }
@@ -56,12 +54,12 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public String updateProduct(String id, ProductRequest productRequest) {
+    public String updateProduct(String productId, ProductRequest productRequest) {
 
-        log.debug("Updating a product with id {}", id);
+        log.debug("Updating a product with id {}", productId);
 
         Query query = new Query();
-        query.addCriteria(Criteria.where("id").is(id));
+        query.addCriteria(Criteria.where("id").is(productId));
         Product product = mongoTemplate.findOne(query, Product.class);
 
         if (product != null) {
@@ -71,14 +69,13 @@ public class ProductServiceImpl implements ProductService {
             return productRepository.save(product).getId();
         }
 
-        return id;
+        return productId;
     }
 
     @Override
-    public Void deleteProduct(String id) {
+    public void deleteProduct(String productId) {
 
-        log.debug("Deleting a product with id {}", id);
-        productRepository.deleteById(id);
-        return null;
+        log.debug("Deleting a product with id {}", productId);
+        productRepository.deleteById(productId);
     }
 }
