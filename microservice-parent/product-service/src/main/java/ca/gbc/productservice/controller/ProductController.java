@@ -9,17 +9,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
-
-import javax.swing.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/product")
+@RequestMapping("/api/products")  // Updated URL mapping to match the test
 @RequiredArgsConstructor
 public class ProductController {
 
@@ -29,16 +23,16 @@ public class ProductController {
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<ProductResponse> createProduct(@RequestBody ProductRequest productRequest) {
 
-        ProductResponse createProduct = productService.createProduct(productRequest);
+        ProductResponse createdProduct = productService.createProduct(productRequest);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Location", "/api/product/" + createProduct.Id());
+        headers.add("Location", "/api/products/" + createdProduct.Id());  // Corrected location header
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .headers(headers)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(createProduct);
+                .body(createdProduct);
     }
 
     @GetMapping
@@ -47,22 +41,18 @@ public class ProductController {
         return productService.getAllProducts();
     }
 
-    // http://localhost:8080/api/product/....plus primary key
     @PutMapping("/{productId}")
-    // @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<?> updateProduct(@PathVariable("productId") String productId,
                                            @RequestBody ProductRequest productRequest) {
 
         String updatedProductId = productService.updateProduct(productId, productRequest);
 
-        // Set the location header attribute
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Location", "/api/product" + updatedProductId);
+        headers.add("Location", "/api/products/" + updatedProductId);  // Fixed location header
 
         return new ResponseEntity<>(headers, HttpStatus.NO_CONTENT);
     }
 
-    // http://localhost:8080/api/product/....plus primary key
     @DeleteMapping("/{productId}")
     public ResponseEntity<?> deleteProduct(@PathVariable("productId") String productId) {
         productService.deleteProduct(productId);
