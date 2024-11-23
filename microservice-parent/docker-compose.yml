@@ -1,15 +1,43 @@
+# .........................................
+# 1. To start containers in detached mode without rebuilding images (if they already exist):
+#    docker-compose -p microservices-comp3095-ecommerce -f docker-compose.yml up -d
+#
+# 2. To force rebuild images before starting containers:
+#    docker-compose -p microservices-comp3095-ecommerce -f docker-compose.yml up -d --build
+# .........................................
+
 version: '3.9'
 
 services:
+  # Order Service
+  order-service:
+    image: order-service
+    build:
+      context: ./order-service
+      dockerfile: src/main/Dockerfile
+    container_name: order-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/orderdb
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    depends_on:
+      - postgres
+    networks:
+      - spring
 
+  # Product Service
   product-service:
     image: product-service
-    ports:
-      - "8084:8084"
     build:
-      context: ./product-service  # The directory where the Dockerfile resides
-      dockerfile: ./Dockerfile    # Specify the Dockerfile for use to build image
+      context: ./product-service
+      dockerfile: Dockerfile
     container_name: product-service
+    ports:
+      - "8080:8080"
     environment:
       SPRING_PROFILES_ACTIVE: docker
     depends_on:
@@ -17,17 +45,92 @@ services:
     networks:
       - spring
 
+  # Inventory Service
+  inventory-service:
+    image: inventory-service
+    build:
+      context: ./inventory-service
+      dockerfile: Dockerfile
+    container_name: inventory-service
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-inventory-db:5432/inventorydb
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    depends_on:
+      - postgres-inventory-db
+    networks:
+      - spring
+
+  # PostgreSQL for Order Service
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: orderdb
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - spring
+
+  # PostgreSQL for Inventory Service
+  postgres-inventory-db:
+    image: postgres:latest
+    container_name: postgres-inventory-db
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: inventorydb
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_inventory_data:/var/lib/postgresql/data
+    networks:
+      - spring
+
+  # MongoDB for Product Service
   mongodb:
     image: mongo:latest
     container_name: mongodb
     ports:
       - "27018:27017"
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=password
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
     volumes:
       - ./data/mongo/products:/data/db
       - ./init/mongo/docker-entrypoint-initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-    command: mongod -auth
     networks:
       - spring
+
+  # MongoDB Admin Interface
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express
+    ports:
+      - "8086:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: password
+      ME_CONFIG_MONGODB_SERVER: mongodb
+    depends_on:
+      - mongodb
+    networks:
+      - spring
+
+volumes:
+  postgres_data:
+    driver: local
+  postgres_inventory_data:
+    driver: local
+
+networks:
+  spring:
+    driver: bridge

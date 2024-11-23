@@ -1,0 +1,41 @@
+# docker-compose -f docker-compose.yml up -d
+# https://robert-askam.co.uk/posts/how-to-connect-mysql-workbench-to-running-mysql-inside-docker
+# docker-compose -p postgres-local-multiple -f docker-compose-multiple.yml up -d
+
+version: '3.8'
+
+services:
+
+  postgres-inventory:
+    image: postgres
+    ports:
+      - "5434:5434"
+    container_name: postgres-inventory
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+    volumes:
+      - ./data/inventory:/var/lib/postgresql/data
+      - ./init/inventory/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  postgres-order:
+       image: postgres
+       ports:
+         - "5432:5432"
+       container_name: postgres-order
+       environment:
+         POSTGRES_USER: admin
+         POSTGRES_PASSWORD: password
+       volumes:
+         - ./data/order:/var/lib/postgresql/data
+         - ./init/order/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - "8888:80"
+    container_name: pgadmin-multiple
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=user@domain.ca
+      - PGADMIN_DEFAULT_PASSWORD=password
+
