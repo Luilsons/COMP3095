@@ -1,20 +1,10 @@
-# .........................................
-# 1. To start containers in detached mode without rebuilding images (if they already exist):
-#    docker-compose -p microservices-comp3095-ecommerce -f docker-compose.yml up -d
-#
-# 2. To force rebuild images before starting containers:
-#    docker-compose -p microservices-comp3095-ecommerce -f docker-compose.yml up -d --build
-# .........................................
-
-version: '3.9'
-
 services:
   # Order Service
   order-service:
     image: order-service
     build:
       context: ./order-service
-      dockerfile: src/main/Dockerfile
+      dockerfile: Dockerfile
     container_name: order-service
     ports:
       - "8082:8082"
@@ -85,7 +75,7 @@ services:
     image: postgres:latest
     container_name: postgres-inventory-db
     ports:
-      - "5434:5432"
+      - "5434:5434"
     environment:
       POSTGRES_DB: inventorydb
       POSTGRES_USER: admin
@@ -122,6 +112,91 @@ services:
       ME_CONFIG_MONGODB_SERVER: mongodb
     depends_on:
       - mongodb
+    networks:
+      - spring
+
+  # Kafka Zookeeper
+  zookeeper:
+    container_name: zookeeper
+    hostname: zookeeper
+    image: confluentinc/cp-zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - spring
+
+  # Kafka Broker
+  broker:
+    container_name: broker
+    image: confluentinc/cp-kafka:7.5.0
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT, PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092, PLAINTEXT_HOST://host.docker.internal:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+    networks:
+      - spring
+
+  # Kafka UI
+  kafka-ui:
+    container_name: kafka-ui
+    image: provectuslabs/kafka-ui
+    ports:
+      - "8088:8080"
+    environment:
+      KAFKA_CLUSTER_NAME: local
+      KAFKA_CLUSTERS_BOOTSTRAPSERVERRS: broker:9092
+      DYNAMIC_CONFIG_ENABLED: 'true'
+    depends_on:
+      - broker
+    networks:
+      - spring
+
+  # Keycloak
+  keycloak:
+    container_name: keycloak
+    hostname: keycloak
+    image: quay.io/keycloak/keycloak:24.0.1
+    command: ["start-dev", "--import-realm"]
+    environment:
+      DB_VENDOR: postgres
+      DB_ADDR: postgres-keycloak
+      DB_DATABASE: keycloak
+      DB_USER: admin
+      DB_PASSWORD: password
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: password
+      ROOT_LOGLEVEL: DEBUG
+    ports:
+      - "8090:8080"
+    volumes:
+      - ./realms:/opt/keycloak/data/import
+    depends_on:
+      - postgres-keycloak
+    networks:
+      - spring
+
+  # PostgreSQL for Keycloak
+  postgres-keycloak:
+    image: postgres
+    container_name: postgres-keycloak
+    ports:
+      - "5431:5432"
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+    volumes:
+      - ./data/postgres/keycloak:/var/lib/postgresql/data
     networks:
       - spring
 

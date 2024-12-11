@@ -1,6 +1,5 @@
 package ca.gbc.apigateway.config;
 
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,6 +7,8 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Slf4j
@@ -23,7 +24,6 @@ public class SecurityConfig {
             "/api-docs/**",
             "/aggregate/**"
     };
-
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -41,6 +41,13 @@ public class SecurityConfig {
                 )
                 .build();
     }
+
+    @Bean
+    public JwtDecoder jwtDecoder() {
+        // Replace this URL with your JWK Set URI from your identity provider
+        String jwkSetUri = "http://your-auth-server/jwk-set-uri";
+        log.info("Initializing JwtDecoder with JWK Set URI: {}", jwkSetUri);
+
+        return NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
+    }
 }
-
-

@@ -9,12 +9,10 @@
 version: '4.0'
 
 services:
-  # MongoDB Service
   mongodb:
     image: mongo:latest
     ports:
       - "27018:27017"
-    #restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: password
@@ -22,10 +20,7 @@ services:
       - ./docker-entrypoint-initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
       - ./db-data:/data/db
     container_name: local-mongodb
-    # Command option if authentication is required
-    # command: mongod --auth
 
-  # MongoDB Admin Interface (Mongo-Express)
   mongo-express:
     image: mongo-express
     ports:

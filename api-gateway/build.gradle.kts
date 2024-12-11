@@ -24,22 +24,32 @@ repositories {
 }
 
 extra["springCloudVersion"] = "2023.0.3"
+
 dependencies {
+    // Spring MVC-based Spring Cloud Gateway
     implementation("org.springframework.cloud:spring-cloud-starter-gateway-mvc")
+
+    // Security and OAuth2 support
     implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
     implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
-    testImplementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.6.0")
-    compileOnly("jakarta.servlet:jakarta.servlet-api:5.0.0")
+
+    // OpenAPI support for MVC
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.4")
+    implementation("org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j:3.1.2")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    // testImplementation("org.springdoc:springdoc-openapi-starter-webmvc-api2.0.4")
+
+
+    // Lombok for reducing boilerplate code
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
+
+    // Servlet API for Spring MVC
+    compileOnly("jakarta.servlet:jakarta.servlet-api:5.0.0")
+
+    // Testing dependencies
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    implementation("org.springframework.boot:spring-boot-starter")
-    implementation("org.springframework.cloud:spring-cloud-starter-gateway")
-    implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
 dependencyManagement {
@@ -53,9 +63,5 @@ tasks.withType<Test> {
 }
 
 tasks.withType<org.springframework.boot.gradle.tasks.bundling.BootJar> {
-    mainClass.set("ca.gbc.apigateway.ApiGatewayApplication")
-}
-
-tasks.withType<org.springframework.boot.gradle.tasks.run.BootRun> {
     mainClass.set("ca.gbc.apigateway.ApiGatewayApplication")
 }

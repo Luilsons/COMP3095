@@ -1,16 +1,16 @@
 package ca.gbc.orderservice.dto;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import java.math.BigDecimal;
 
-@Getter
-@Setter
-public class OrderRequest {
-        private Long id;
-        private String orderNumber;
-        private String skuCode;
-        private BigDecimal price;
-        private Integer quantity;
+public record OrderRequest(
+        Long id,
+        String orderNumber,
+        String skuCode,
+        BigDecimal price,
+        Integer quantity,
+        UserDetails userDetails){
+
+        public record UserDetails(String email, String firstName, String lastName) {}
+
+
 }

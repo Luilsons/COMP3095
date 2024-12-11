@@ -80,6 +80,7 @@ subprojects {
                 "inventory-service" -> "ca.gbc.inventoryservice.InventoryServiceApplication"
                 "order-service" -> "ca.gbc.orderservice.OrderServiceApplication"
                 "product-service" -> "ca.gbc.productservice.ProductServiceApplication"
+                "notification-service" -> "ca.gbc.notificationservice.NotificationServiceApplication"
                 else -> throw IllegalArgumentException("Unknown subproject: ${project.name}")
             }
         )
